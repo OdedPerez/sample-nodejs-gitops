@@ -13,7 +13,7 @@ autoscaling:
   targetMemoryUtilizationPercentage: 80
 
 image:
-  tag: "v0.0.5"
+  tag: "v0.0.6"
 
 ingress:
   enabled: true
