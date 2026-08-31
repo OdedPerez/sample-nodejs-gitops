@@ -30,3 +30,6 @@ ingress:
 # serviceMonitorSelectorNilUsesHelmValues=false parameter.
 serviceMonitor:
   enabled: true
+
+grafanaDashboard:
+  enabled: true
