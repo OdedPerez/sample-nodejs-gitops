@@ -1,0 +1,47 @@
+# Generates one Application per open PR against sample-nodejs, tracking
+# that PR's own branch (chart + values-dev.yaml both already live there -
+# see pr-checks.yml's deploy-dev job, which commits the built image's tag
+# straight onto the PR branch). No GitOps-repo involvement needed for dev:
+# unlike staging/prod, this is single-source. Application + namespace are
+# created when the PR opens and torn down automatically when it closes.
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: sample-nodejs-dev
+  namespace: argocd
+spec:
+  # Opts into Go-template rendering ({{.field}}) - without this, ArgoCD
+  # uses the older fasttemplate engine ({{field}}, no dot) and silently
+  # passes dotted placeholders through unsubstituted instead of erroring,
+  # which is exactly what happened before this was added.
+  goTemplate: true
+  generators:
+    - pullRequest:
+        github:
+          owner: OdedPerez
+          repo: sample-nodejs
+          tokenRef:
+            secretName: github-pr-token
+            key: token
+        requeueAfterSeconds: 60
+  template:
+    metadata:
+      name: "sample-nodejs-dev-pr-{{.number}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/OdedPerez/sample-nodejs.git
+        targetRevision: "{{.head_sha}}"
+        path: helm/sample-nodejs
+        helm:
+          valueFiles:
+            - values-dev.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "sample-nodejs-dev-pr-{{.number}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
