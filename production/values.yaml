@@ -23,3 +23,10 @@ ingress:
     - secretName: sample-nodejs-tls
       hosts:
         - sample-nodejs.example.com
+
+# Requires kube-prometheus-stack (sample-nodejs-gitops/argocd/
+# application-monitoring.yaml) already installed and configured to
+# discover ServiceMonitors cluster-wide - see that Application's
+# serviceMonitorSelectorNilUsesHelmValues=false parameter.
+serviceMonitor:
+  enabled: true
