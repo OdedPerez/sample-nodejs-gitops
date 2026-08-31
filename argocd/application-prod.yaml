@@ -4,7 +4,7 @@ metadata:
   name: sample-nodejs-prod
   namespace: argocd
 spec:
-  project: default
+  project: sample-nodejs-prod
   sources:
     - repoURL: https://github.com/OdedPerez/sample-nodejs.git
       targetRevision: main
