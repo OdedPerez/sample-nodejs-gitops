@@ -24,3 +24,9 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      # Prometheus/Alertmanager CRDs are large enough to exceed the 256KB
+      # last-applied-configuration annotation limit under client-side
+      # apply (same root cause as the ArgoCD install itself needing
+      # --server-side) - without this, those specific CRDs silently fail
+      # to apply while the rest of the chart succeeds.
+      - ServerSideApply=true
