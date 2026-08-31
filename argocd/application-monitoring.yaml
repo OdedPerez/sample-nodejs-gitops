@@ -15,6 +15,17 @@ spec:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
     targetRevision: 88.6.2
+    helm:
+      parameters:
+        # Default Prometheus config only discovers ServiceMonitors carrying
+        # the label release=kube-prometheus-stack (a safety default so it
+        # doesn't blindly scrape everything cluster-wide). We want the
+        # opposite here: any app's chart (like sample-nodejs's opt-in
+        # servicemonitor.yaml) should be discoverable without needing to
+        # know this stack's specific release name. This makes Prometheus
+        # watch ServiceMonitors cluster-wide regardless of labels.
+        - name: prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues
+          value: "false"
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
