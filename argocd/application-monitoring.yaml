@@ -1,0 +1,26 @@
+# Installs kube-prometheus-stack (Prometheus Operator, Prometheus,
+# Alertmanager, Grafana, and the CRDs sample-nodejs's opt-in
+# servicemonitor.yaml template targets) declaratively via ArgoCD, rather
+# than a one-off `helm install`. Same bootstrap pattern as ArgoCD itself:
+# platform tooling, applied once with kubectl to register, then ArgoCD
+# owns reconciling it from here on - nothing further to run by hand.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 88.6.2
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
