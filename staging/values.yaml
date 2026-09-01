@@ -5,6 +5,12 @@
 
 replicaCount: 2
 
+# ghcr-pull-secret is a real, cluster-only credential (not git-tracked) -
+# created once via `kubectl create secret docker-registry`, same reasoning
+# as GITOPS_REPO_TOKEN was: genuinely permanent, just not declared here.
+imagePullSecrets:
+  - name: ghcr-pull-secret
+
 autoscaling:
   enabled: true
   minReplicas: 2
