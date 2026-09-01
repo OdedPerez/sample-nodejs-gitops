@@ -43,6 +43,11 @@ ArgoCD watches this repo and reconciles the cluster automatically
 (`syncPolicy.automated` with `prune` + `selfHeal`) — the git commit *is*
 the deployment.
 
+GHCR is **private**, so each environment's `values.yaml` also sets
+`imagePullSecrets: [{name: ghcr-pull-secret}]` — a `kubernetes.io/dockerconfigjson`
+Secret created once per namespace directly via `kubectl` (not git-tracked,
+since it holds a real credential).
+
 ## Bootstrapping ArgoCD to watch this repo
 
 ```bash
