@@ -15,7 +15,7 @@ imagePullSecrets:
   - name: ghcr-pull-secret
 
 image:
-  tag: "v0.0.14"
+  tag: "v0.0.16"
 
 ingress:
   enabled: true
