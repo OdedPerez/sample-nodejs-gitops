@@ -3,6 +3,7 @@
 # thin slice of this via its own values file in the GitOps repo.
 
 replicaCount: 2
+revisionHistoryLimit: 3
 
 image:
   repository: ghcr.io/odedperez/sample-nodejs
