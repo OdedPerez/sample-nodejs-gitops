@@ -1,5 +1,5 @@
 # Restricts the sample-nodejs-staging Application to only ever target the
-# sample-nodejs-staging namespace, from only these two known repos. If
+# sample-nodejs-staging namespace, from only this known repo. If
 # someone with edit access to that Application repointed its destination
 # at sample-nodejs-prod (mistake or compromised credential), ArgoCD would
 # reject the sync - that destination isn't whitelisted here.
@@ -11,7 +11,6 @@ metadata:
 spec:
   description: Staging environment for sample-nodejs - isolated from production
   sourceRepos:
-    - https://github.com/OdedPerez/sample-nodejs.git
     - https://github.com/OdedPerez/sample-nodejs-gitops.git
   destinations:
     - server: https://kubernetes.default.svc

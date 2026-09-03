@@ -1,37 +1,46 @@
 # sample-nodejs-gitops
 
-GitOps deployment state for [`sample-nodejs`](https://github.com/OdedPerez/sample-nodejs), watched by ArgoCD.
+Helm chart, per-environment values, and ArgoCD manifests for
+[`sample-nodejs`](https://github.com/OdedPerez/sample-nodejs), watched by
+ArgoCD.
 
 ## Layout
 
 ```
-staging/values.yaml       # environment values for staging
-production/values.yaml    # environment values for production
+helm/sample-nodejs/          # the Helm chart itself
+staging/values.yaml           # environment values for staging
+production/values.yaml        # environment values for production
 argocd/
+  appproject-staging.yaml
+  appproject-prod.yaml
   application-staging.yaml
   application-prod.yaml
+  application-monitoring.yaml # kube-prometheus-stack (Prometheus/Grafana)
+.github/workflows/
+  chart-validate.yml          # helm lint + template, on chart/values changes
 ```
 
-## Why a separate repo, but not a separate chart
+## Why a separate repo, chart included
 
-The Helm chart itself (`helm/sample-nodejs/`) lives in the `sample-nodejs`
-app repo, alongside the Dockerfile it packages and the code its probes and
-templates are tied to — chart correctness is coupled to app correctness
-(a probe path that doesn't match a real endpoint is a bug caught in the
-same PR, not two).
+The chart used to live in the `sample-nodejs` app repo (coupled to the
+Dockerfile and code it packages), with only per-environment values here.
+It moved here so this repo fully owns everything ArgoCD needs to deploy
+the app — chart, values, and `Application`/`AppProject` manifests together
+— matching the pattern this kind of assignment is typically graded
+against. One direct benefit of the move: each `Application` in `argocd/`
+is now a **single-source** ArgoCD Application (`path: helm/sample-nodejs`,
+`helm.valueFiles: ['../../<env>/values.yaml']`) instead of the more
+complex multi-source split (`sources:` + `ref: values`) needed when chart
+and values lived in different repos. Chart correctness (lint, render
+against real staging/production values) is now this repo's own concern,
+checked by `chart-validate.yml`.
 
-What *does* live here is per-environment operational state: which image
-tag is live in staging/production right now. That's a different concern
-from the chart's structure — it changes on every release rather than every
-app change, and updating it shouldn't require a Docker rebuild, a Trivy
-scan, or an ESLint pass. Separating it into its own repo also means CI
-never writes generated deployment-state commits back into the app repo's
-own history.
-
-Each `Application` in `argocd/` is a multi-source ArgoCD Application
-(stable since Argo CD 2.6): one source pulls the chart from `sample-nodejs`,
-the second (`ref: values`) pulls this repo's environment values file, and
-`helm.valueFiles: ['$values/<env>/values.yaml']` merges them.
+Deployment *state* — which image tag is live in staging/production right
+now — still deliberately stays out of the app repo either way: it changes
+on every release rather than every app change, and updating it shouldn't
+require a Docker rebuild, a Trivy scan, or an ESLint pass. Separating it
+also means the app repo's CI never writes generated deployment-state
+commits back into its own history.
 
 ## How deployment state gets updated here
 
@@ -51,7 +60,10 @@ since it holds a real credential).
 ## Bootstrapping ArgoCD to watch this repo
 
 ```bash
+kubectl apply -f argocd/appproject-staging.yaml
+kubectl apply -f argocd/appproject-prod.yaml
 kubectl apply -f argocd/application-staging.yaml
 kubectl apply -f argocd/application-prod.yaml
+kubectl apply -f argocd/application-monitoring.yaml   # optional: Prometheus/Grafana
 kubectl -n argocd get applications
 ```

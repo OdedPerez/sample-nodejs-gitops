@@ -5,16 +5,13 @@ metadata:
   namespace: argocd
 spec:
   project: sample-nodejs-staging
-  sources:
-    - repoURL: https://github.com/OdedPerez/sample-nodejs.git
-      targetRevision: main
-      path: helm/sample-nodejs
-      helm:
-        valueFiles:
-          - $values/staging/values.yaml
-    - repoURL: https://github.com/OdedPerez/sample-nodejs-gitops.git
-      targetRevision: main
-      ref: values
+  source:
+    repoURL: https://github.com/OdedPerez/sample-nodejs-gitops.git
+    targetRevision: main
+    path: helm/sample-nodejs
+    helm:
+      valueFiles:
+        - ../../staging/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: sample-nodejs-staging

@@ -1,0 +1,39 @@
+name: Chart Validate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "helm/**"
+      - "staging/values.yaml"
+      - "production/values.yaml"
+  push:
+    branches: [main]
+    paths:
+      - "helm/**"
+      - "staging/values.yaml"
+      - "production/values.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  helm-validate:
+    name: Validate Helm chart (all environments)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v4.2.4
+
+      - name: Lint chart structure
+        run: helm lint helm/sample-nodejs
+
+      - name: Render against every environment
+        run: |
+          helm template helm/sample-nodejs
+          helm template helm/sample-nodejs -f helm/sample-nodejs/values-minikube.yaml
+          helm template helm/sample-nodejs -f staging/values.yaml
+          helm template helm/sample-nodejs -f production/values.yaml

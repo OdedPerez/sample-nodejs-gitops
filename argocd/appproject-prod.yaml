@@ -1,5 +1,5 @@
 # Restricts the sample-nodejs-prod Application to only ever target the
-# sample-nodejs-prod namespace, from only these two known repos. Same
+# sample-nodejs-prod namespace, from only this known repo. Same
 # reasoning as appproject-staging.yaml, mirrored for production.
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
@@ -9,7 +9,6 @@ metadata:
 spec:
   description: Production environment for sample-nodejs - isolated from staging
   sourceRepos:
-    - https://github.com/OdedPerez/sample-nodejs.git
     - https://github.com/OdedPerez/sample-nodejs-gitops.git
   destinations:
     - server: https://kubernetes.default.svc
