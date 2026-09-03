@@ -1,4 +1,4 @@
-# Helm chart — `sample-nodejs`
+# Helm chart - `sample-nodejs`
 
 Helm chart to deploy the `sample-nodejs` service to Kubernetes. This is the
 deliverable for the **Helm** part of the challenge.
@@ -27,12 +27,12 @@ helm/
 ```
 
 ## Why a Deployment (not a StatefulSet)
-The service is **stateless** — replicas are interchangeable, hold no per-pod
+The service is **stateless** - replicas are interchangeable, hold no per-pod
 data, and need no stable network identity or ordered startup/shutdown. A
 Deployment gives fast horizontal scaling, zero-downtime rolling updates
 (`maxUnavailable: 0`), and lets the HPA scale freely. A StatefulSet earns its
 complexity for workloads with stable identities and per-replica persistent
-volumes (databases, brokers) — none of which apply to this app.
+volumes (databases, brokers) - none of which apply to this app.
 
 ## Requirements coverage
 - **Liveness + readiness probes** (+ a startup probe) → `deployment.yaml`,
@@ -45,7 +45,7 @@ volumes (databases, brokers) — none of which apply to this app.
   annotation rolls pods automatically when config/secret content changes.
   Secret supports `existingSecret` so real secrets can come from Sealed
   Secrets / External Secrets / Vault instead of being committed in Git. (The
-  app itself only reads `PORT` — the ConfigMap/Secret keys are illustrative,
+  app itself only reads `PORT` - the ConfigMap/Secret keys are illustrative,
   added to demonstrate the wiring end-to-end.)
 - **Extras**: HPA, PodDisruptionBudget, topologySpreadConstraints, a
   dedicated ServiceAccount (`automountServiceAccountToken: false`), opt-in
@@ -62,7 +62,7 @@ helm upgrade --install sample-nodejs helm/sample-nodejs \
   -n sample-nodejs --create-namespace
 ```
 
-Single-node minikube (HA features off — see overlay). The image is built
+Single-node minikube (HA features off - see overlay). The image is built
 from the [`sample-nodejs`](https://github.com/OdedPerez/sample-nodejs)
 app repo's Dockerfile; the `helm` commands below run from this
 (`sample-nodejs-gitops`) repo's root:
@@ -84,7 +84,7 @@ helm template sample-nodejs helm/sample-nodejs
 
 ## Staging & production
 
-Not deployed manually with `helm upgrade` — [ArgoCD](https://argo-cd.readthedocs.io/)
+Not deployed manually with `helm upgrade` - [ArgoCD](https://argo-cd.readthedocs.io/)
 manages both, combining this chart with the `staging/`/`production/`
 values files at the root of this same repo via a single-source
 `Application`. See the root [README](../../README.md) for the values/deploy
