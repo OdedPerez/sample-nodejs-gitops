@@ -1,8 +1,7 @@
 # sample-nodejs-gitops
 
 Helm chart, per-environment values, and ArgoCD manifests for
-[`sample-nodejs`](https://github.com/OdedPerez/sample-nodejs), watched by
-ArgoCD.
+[`sample-nodejs`](https://github.com/OdedPerez/sample-nodejs), watched by ArgoCD.
 
 ## Layout
 
@@ -22,40 +21,20 @@ argocd/
 
 ## Why a separate repo, chart included
 
-The chart used to live in the `sample-nodejs` app repo (coupled to the
-Dockerfile and code it packages), with only per-environment values here.
-It moved here so this repo fully owns everything ArgoCD needs to deploy
-the app — chart, values, and `Application`/`AppProject` manifests together
-— matching the pattern this kind of assignment is typically graded
-against. One direct benefit of the move: each `Application` in `argocd/`
-is now a **single-source** ArgoCD Application (`path: helm/sample-nodejs`,
-`helm.valueFiles: ['../../<env>/values.yaml']`) instead of the more
-complex multi-source split (`sources:` + `ref: values`) needed when chart
-and values lived in different repos. Chart correctness (lint, render
-against real staging/production values) is now this repo's own concern,
-checked by `chart-validate.yml`.
-
-Deployment *state* — which image tag is live in staging/production right
-now — still deliberately stays out of the app repo either way: it changes
-on every release rather than every app change, and updating it shouldn't
-require a Docker rebuild, a Trivy scan, or an ESLint pass. Separating it
-also means the app repo's CI never writes generated deployment-state
-commits back into its own history.
+This repo owns everything ArgoCD needs to deploy the app — the Helm chart,
+per-environment values, and the `Application`/`AppProject` manifests —
+kept separate from `sample-nodejs`'s own source/CI concerns. For the full
+reasoning (why a separate repo, why the chart lives here rather than in
+the app repo), see [`sample-nodejs`'s `SUBMISSION.md`](https://github.com/OdedPerez/sample-nodejs/blob/main/SUBMISSION.md#gitops--argocd).
 
 ## How deployment state gets updated here
 
-`sample-nodejs`'s `release.yml` pipeline pushes commits to this repo's
-`staging/values.yaml` (on every merge to `main`) and `production/values.yaml`
-(after the `production` GitHub Environment's manual approval) — bumping
-`image.tag` to the version it just built, scanned, and pushed to GHCR.
-ArgoCD watches this repo and reconciles the cluster automatically
-(`syncPolicy.automated` with `prune` + `selfHeal`) — the git commit *is*
-the deployment.
-
-GHCR is **private**, so each environment's `values.yaml` also sets
-`imagePullSecrets: [{name: ghcr-pull-secret}]` — a `kubernetes.io/dockerconfigjson`
-Secret created once per namespace directly via `kubectl` (not git-tracked,
-since it holds a real credential).
+`sample-nodejs`'s `release.yml` pipeline bumps `staging/values.yaml` and
+`production/values.yaml`'s `image.tag` here on every release (production
+gated behind manual approval); ArgoCD reconciles the cluster automatically
+from there. GHCR is **private**, so each environment's `values.yaml` also
+sets `imagePullSecrets: [{name: ghcr-pull-secret}]`, a Secret created once
+per namespace directly via `kubectl` (not git-tracked).
 
 ## Bootstrapping ArgoCD to watch this repo
 
